@@ -71,8 +71,8 @@ beeinträchtigen kann.
 Lösungskonzept
 Um die Herausforderungen der manuellen Übertragung von Raum- und Projektinformationen 
 zu bewältigen, wurde eine Lösung entwickelt, das sowohl einen technische Lösung als auch einen 
-optimierten Prozess beinhaltet. Im Rahmen dieses Ansatzes wurde ein PythonScript erstellt, 
-das als Quelle ein vorhandenes IFCModell nutzt. Zusätzlich führt das Skript den 
+optimierten Prozess beinhaltet. Im Rahmen dieses Ansatzes wurde ein Python-Script erstellt, 
+das als Quelle ein vorhandenes IFC-Modell nutzt. Zusätzlich führt das Skript den 
 Projektleiter durch die erforderlichen Informationsinputs mithilfe einer 
 benutzerfreundlichen Oberfläche. Anschliessend wird auf Grundlage der getätigten 
 Abfragen, das Minergie-Excel, für sämtliche im Projekt vorhandenen Räume, ausgefüllt. Eine 
