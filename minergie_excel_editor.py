@@ -431,7 +431,6 @@ def minergie_excel_editor(glb_exp_data):
                 punkt_index = filepath.rfind('.')
                 if punkt_index != -1 and punkt_index >= len(filepath) - 6:
                     temp_save_filepath = filepath[:punkt_index - 1] + str(current_file_nr) + filepath[punkt_index:]
-                    print(temp_save_filepath)
                 else:
                     print("ERROR - check function save_filepath")
 
@@ -514,14 +513,16 @@ def minergie_excel_editor(glb_exp_data):
 
 
                 save_overview_info_to_excel(overview_info, str(save_folder) + "\DATUM_PHASE_sows_Excel-Ueberisicht.xlsx")
+
+                save_overview_status = tk.Label(root, text="Excel Übersicht erfolgreich gespeichert", fg="green")
+                save_overview_status.pack(pady=10)
+
                 print("INFO - Excel Overview saved")
     
     
             save_overview_button = tk.Button(root, text="Excel Übersicht speichern", command=lambda: save_overview(save_folder, save_filepath))  # save Overview Excel
             save_overview_button.pack(pady=10)
 
-            save_overview_status = tk.Label(root, text="Excel Übersicht erfolgreich gespeichert", fg="green")
-            save_overview_status.pack(pady=10)
 
             quit_button = tk.Button(root, text="Beenden", command=lambda: root.destroy())  # Quit the Tkinter application
             quit_button.pack(pady=10)
