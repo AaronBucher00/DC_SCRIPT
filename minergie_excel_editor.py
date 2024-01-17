@@ -7,6 +7,7 @@ import shutil #for copy original excel
 import tkinter as tk #for UI
 from tkinter import filedialog, StringVar, OptionMenu, Label, Button, Toplevel
 
+import win32com.client #for update values in exported Minergie-Excels
 
 def minergie_excel_editor(glb_exp_data):
     class Minergie_Excel_Editor:
@@ -259,7 +260,7 @@ def minergie_excel_editor(glb_exp_data):
                     while True:    
                         # Create the full path for the saved Excel file
                         file_nr +=1
-                        save_filepath = os.path.join(save_folder, "DATUM_PHASE_sows_v2023-2_"+ str(file_nr) +".xlsx")
+                        save_filepath = os.path.join(save_folder, "sows_v2023-2_"+ str(file_nr) +".xlsx")
 
                         self.sheet_name_entry_info = "Projekteingaben"
                         info_sheet = self.workbook[self.sheet_name_entry_info]  # Access the sheet by its name
@@ -308,7 +309,7 @@ def minergie_excel_editor(glb_exp_data):
                                     spalte_fenstertyp = "L"
                                     spalte = "K"
                                 else:
-                                    print("Error")
+                                    print("ERRROR - check window types")
                                 
 
                                 if glb_exp_data[room_nr][5+j] == 0:
@@ -368,8 +369,7 @@ def minergie_excel_editor(glb_exp_data):
                             room_sheet['D94'] = self.list_komfort[0].get()  # Nutzungskategorie
                             room_sheet['D96'] = self.list_komfort[1].get()  # Sommerstrategie
 
-                            print("lenge Array_"+str(len(glb_exp_data)-1))
-                            print ("room_nr_"+ str(room_nr)) 
+                            print("INFO - Room Nr. "+ str(room_nr) + "/"+str(len(glb_exp_data)-1) + " saved") 
 
                             if (room_nr) >= len(glb_exp_data)-1:
                                 save_values_done = True
@@ -377,7 +377,7 @@ def minergie_excel_editor(glb_exp_data):
                             else:
                                 room_nr += 1   
 
-                        self.workbook.save(save_filepath) 
+                        self.workbook.save(save_filepath)
 
                         if (room_nr-1) >= len(glb_exp_data)-1 or save_values_done == True:
                             save_status = tk.Label(root, text="Excel Files erfolgreich gespeichert", fg="green")
@@ -391,7 +391,137 @@ def minergie_excel_editor(glb_exp_data):
             except Exception as e:
                 self.status_label.config(text=f"Fehler: {str(e)}", fg="red")
 
+            def recalculate_excel_file(file_path):
+                excel_app = win32com.client.DispatchEx("Excel.Application")  # Use DispatchEx for better control
+                excel_app.Visible = False  # Set visibility to False
 
+                workbook = None  # Initialize workbook with None
+
+                try:
+                    # Open the Excel file
+                    workbook = excel_app.Workbooks.Open(file_path)
+                                
+                    # Recalculate all formulas
+                    workbook.RefreshAll()
+                                
+                    # Save the changes
+                    workbook.Save()
+                                
+                except Exception as e:
+                    print(f"Error: {str(e)}")
+
+                finally:
+                    if workbook is not None:
+                        # Close Excel
+                        workbook.Close(SaveChanges=False)  # SaveChanges=False prevents saving changes
+                    excel_app.Quit()
+                            
+
+            def total_files_finder(filepath):
+                punkt_index = filepath.rfind('.')
+                if punkt_index != -1:
+                    zeichen_vor_punkt = filepath[punkt_index - 1]
+                else:
+                    zeichen_vor_punkt = "ERROR - check function total_files_finder"
+
+                return zeichen_vor_punkt
+                    
+
+            def generate_temp_save_filepath(filepath, current_file_nr):
+                punkt_index = filepath.rfind('.')
+                if punkt_index != -1 and punkt_index >= len(filepath) - 6:
+                    temp_save_filepath = filepath[:punkt_index - 1] + str(current_file_nr) + filepath[punkt_index:]
+                    print(temp_save_filepath)
+                else:
+                    print("ERROR - check function save_filepath")
+
+                return temp_save_filepath
+                        
+                        
+            def save_overview_info_to_excel(overview_info, output_filepath):
+                workbook = openpyxl.Workbook()
+                sheet = workbook.active
+
+                # Write headers to the first row of the sheet
+                headers = ['Excel-Pfad','Raumname', 'Einhaltung bauliche Grundanforderungen', 'Einhaltung sommerlichen Komfort', 'Benötigte Maßnahmen', 'Benötigte g-tot-Werte']
+                sheet.append(headers)
+
+                # Write data to the sheet
+                for room_info in overview_info:
+                    sheet.append(room_info)
+
+                # Save the workbook to the specified file path
+                workbook.save(output_filepath)
+                        
+
+            def save_overview(save_folder,save_filepath):
+                                        
+                total_files = int(total_files_finder(save_filepath))
+                total_rooms = int(len(glb_exp_data)-1)
+                current_room = 0
+
+                            
+                overview_info = []
+
+                for i in range(1,(total_files+1)):
+                    print("INFO - File Nr.", i, "read")
+
+                            
+                temp_save_filepath = generate_temp_save_filepath(save_filepath, i)
+
+                try:
+                    if temp_save_filepath:
+                        self.file_label.config(text=temp_save_filepath)
+                        # Recalculate formulas in Excel file
+                        recalculate_excel_file(temp_save_filepath)
+                        self.workbook = openpyxl.load_workbook(temp_save_filepath, data_only=True)
+                        self.save_button.config(state=tk.NORMAL)
+                    else:
+                        self.status_label.config(text="Error: No file selected", fg="red")
+
+                                    
+                    for j in range(1,4):
+                        if current_room >= (total_rooms+1):
+                            break
+                        else:
+                            pass
+                                        
+                        room_sheet = self.workbook["Nachweisblatt_Raum." + str(j)]
+
+                                        
+                        orig_overview_info = []
+                        overview_info.append([])
+
+                        overview_info[current_room].append(temp_save_filepath) #Filename
+                        orig_overview_info.append(room_sheet['E11']) #Raumname
+                        orig_overview_info.append(room_sheet['L90']) #Einhaltung bauliche Grundanforderungen
+                        orig_overview_info.append(room_sheet['K98']) #Einhaltung sommerlichen Komfort
+                        orig_overview_info.append(room_sheet['B52']) #Benötigte Masnahmen
+                        orig_overview_info.append(room_sheet['L51']) #Benötigte g-tot-Werte                 
+
+                        for k in orig_overview_info:
+                            if isinstance(k, str):
+                                overview_info[current_room].append(str(k).value)
+                            elif isinstance(k, float):
+                                overview_info[current_room].append(float(k).value)
+                            else:
+                                overview_info[current_room].append(k.value)
+                                        
+                        current_room +=1
+
+                except Exception as e:
+                    self.status_label.config(text=f"Error: {str(e)}", fg="red")
+
+
+                save_overview_info_to_excel(overview_info, str(save_folder) + "\DATUM_PHASE_sows_Excel-Ueberisicht.xlsx")
+                print("INFO - Excel Overview saved")
+    
+    
+            save_overview_button = tk.Button(root, text="Excel Übersicht speichern", command=lambda: save_overview(save_folder, save_filepath))  # save Overview Excel
+            save_overview_button.pack(pady=10)
+
+            save_overview_status = tk.Label(root, text="Excel Übersicht erfolgreich gespeichert", fg="green")
+            save_overview_status.pack(pady=10)
 
             quit_button = tk.Button(root, text="Beenden", command=lambda: root.destroy())  # Quit the Tkinter application
             quit_button.pack(pady=10)
