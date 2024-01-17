@@ -49,6 +49,7 @@ export_ifc_data:
 minergie_excel_editor:
   Minergie_Excel_Editor : class for gathering user input (project-specific information)
   save_values (): saves values to multiple Excel files
+  save_overview(save_folder, save_filepath): save overview of the results of all previews saved Minergie-Excels 
 
 
 
@@ -102,3 +103,4 @@ export_ifc_data:
 minergie_excel_editor:
   Minergie_Excel_Editor : Klasse: Input von User abholen (Projektspezifische Info)
   save_values (): Speichern von mehreren Excel-Files
+  save_overview(save_folder, save_filepath): speichert eine Überischt der Ergebnisse sämtlicher zuvor gespeicherten Minergie-Excels
